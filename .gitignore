@@ -1,0 +1,8 @@
+# Node.js関連
+node_modules/
+npm-debug.log
+.env
+
+# OS関連
+.DS_Store
+Thumbs.db
