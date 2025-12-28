@@ -3,12 +3,21 @@ const express = require("express");
 const axios = require("axios");
 const crypto = require("crypto");
 
+const { createClient } = require("@supabase/supabase-js");
+
 const app = express();
 const PORT = 3000;
 
 // 環境変数
 const { SHOPIFY_API_KEY, SHOPIFY_API_SECRET, SHOPIFY_SCOPES, HOST } =
   process.env;
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+console.log("Supabase connected with service_role");
 
 // JSONを受け取る設定（これがないとPOSTが動かない）
 app.use(express.json());
@@ -53,7 +62,7 @@ app.get("/auth/callback", async (req, res) => {
   try {
     console.log("アクセストークンを取得中...");
 
-    // アクセストークンを取得中
+    // Shopifyからアクセストークンを取得
     const tokenResponse = await axios.post(
       `https://${shop}/admin/oauth/access_token`,
       {
@@ -64,17 +73,37 @@ app.get("/auth/callback", async (req, res) => {
     );
 
     const accessToken = tokenResponse.data.access_token;
-
     console.log("アクセストークン取得成功！");
-    console.log("Token:", accessToken);
 
-    // 一時的にグローバル変数に保存（後でデータベースに保存する）
+    // Supabase(PostgreSQL)に保存
+    const { data, error } = await supabase
+      .from("shops")
+      .upsert(
+        {
+          shop_name: shop,
+          access_token: accessToken,
+        },
+        {
+          onConflict: "shop_name",
+        }
+      )
+      .select();
+
+    if (error) {
+      console.log("データベース保存エラー:", error);
+      throw error;
+    }
+
+    console.log("データベースに保存成功:", data);
+
+    // 互換性のためグローバル変数にも保存
     global.shopifyAccessToken = accessToken;
     global.shopName = shop;
 
     res.send(`
       <h1>認証成功！</h1>
-      <p>Shopify APIを使えるようになりました</p>
+      <p>Shopify APIを使えるようになりました。</p>
+      <p>アクセストークンをデータベースに保存しました。</p>
       <p><a href="/products/shopify">Shopifyの商品データを取得する</a></p>
     `);
   } catch (error) {
@@ -89,24 +118,34 @@ app.get("/auth/callback", async (req, res) => {
 
 // Step 3: Shopify APIをテスト
 app.get("/products/shopify", async (req, res) => {
-  if (!global.shopifyAccessToken || !global.shopName) {
-    return res.status(401).send(`
-      <h1>認証が必要です</h1>
-      <p>まず認証してください:</p>
-      <p><a href="/auth?shop=your-store.myshopify.com>認証を開始</a></p>
-      <p>* your-store.myshopify.com を実際のストアURLに書き換えてください</p>
-    `);
-  }
-
   try {
+    // データベースからアクセストークンを取得
+    const { data: shops, error } = await supabase
+      .from("shops")
+      .select("*")
+      .limit(1)
+      .single();
+
+    if (error || !shops) {
+      return res.status(401).send(`
+        <h1>認証が必要です</h1>
+        <p>まず認証してください:</p>
+        <p><a href="/auth?shop=dev-practice-store-app.myshopify.com">認証を開始</a></p>
+        <p>* dev-practice-store-app.myshopify.com を実際のストアURLに置き換えてください</p>
+      `);
+    }
+
+    const { shop_name, access_token } = shops;
+
+    console.log("データベースからトークン取得:", shop_name);
     console.log("Shopify APIを呼び出し中...");
 
     // Shopify Admin APIで商品一覧を取得
     const response = await axios.get(
-      `https://${global.shopName}/admin/api/2025-01/products.json`,
+      `https://${shop_name}/admin/api/2025-01/products.json`,
       {
         headers: {
-          "X-Shopify-Access-Token": global.shopifyAccessToken,
+          "X-Shopify-Access-Token": access_token,
         },
       }
     );
@@ -114,14 +153,13 @@ app.get("/products/shopify", async (req, res) => {
     console.log("商品データ取得成功！");
     res.json(response.data);
   } catch (error) {
-    console.log('API呼び出しエラー:', error.response?.data || error.message);
+    console.log("API呼び出しエラー:", error.response?.data || error.message);
     res.status(500).json({
-      error: 'Shopify API呼び出しに失敗しました',
-      details: error.response?.data || error.message
+      error: "Shopify API呼び出しに失敗しました",
+      details: error.response?.data || error.message,
     });
   }
 });
-
 
 // ==================
 // 既存のエンドポイント
