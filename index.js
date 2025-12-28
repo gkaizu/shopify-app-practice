@@ -19,6 +19,62 @@ const supabase = createClient(
 
 console.log("Supabase connected with service_role");
 
+// ==================
+// Slack通知テスト
+// ==================
+app.get("/test-slack", async (req, res) => {
+  try {
+    const message = {
+      text: "slack通知テスト成功！",
+      blocks: [
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: "*在庫アラート*\n商品の在庫が少なくなっています",
+          },
+        },
+        {
+          type: "section",
+          fields: [
+            {
+              type: "mrkdwn",
+              text: "*商品ID:*\n123456789",
+            },
+            {
+              type: "mrkdwn",
+              text: "*現在の在庫:*\n5個",
+            },
+            {
+              type: "mrkdwn",
+              text: "*閾値:*\n10個",
+            },
+            {
+              type: "mrkdwn",
+              text: "*ストア:*\ndev-practice-store-app",
+            },
+          ],
+        },
+      ],
+    };
+
+    const response = await axios.post(process.env.SLACK_WEBHOOK_URL, message);
+
+    console.log("slack通知送信成功");
+
+    res.json({
+      success: true,
+      message: "slack通知を送信しました。slackを確認してください。",
+    });
+  } catch (error) {
+    console.error("slack通知エラー:", error.response?.data || error.message);
+    res.status(500).json({
+      error: "slack通知の送信に失敗しました",
+      details: error.response?.data || error.message,
+    });
+  }
+});
+
 // JSONを受け取る設定（これがないとPOSTが動かない）
 app.use(express.json());
 
