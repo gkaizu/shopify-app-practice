@@ -19,62 +19,6 @@ const supabase = createClient(
 
 console.log("Supabase connected with service_role");
 
-// ==================
-// Slack通知テスト
-// ==================
-app.get("/test-slack", async (req, res) => {
-  try {
-    const message = {
-      text: "slack通知テスト成功！",
-      blocks: [
-        {
-          type: "section",
-          text: {
-            type: "mrkdwn",
-            text: "*在庫アラート*\n商品の在庫が少なくなっています",
-          },
-        },
-        {
-          type: "section",
-          fields: [
-            {
-              type: "mrkdwn",
-              text: "*商品ID:*\n123456789",
-            },
-            {
-              type: "mrkdwn",
-              text: "*現在の在庫:*\n5個",
-            },
-            {
-              type: "mrkdwn",
-              text: "*閾値:*\n10個",
-            },
-            {
-              type: "mrkdwn",
-              text: "*ストア:*\ndev-practice-store-app",
-            },
-          ],
-        },
-      ],
-    };
-
-    const response = await axios.post(process.env.SLACK_WEBHOOK_URL, message);
-
-    console.log("slack通知送信成功");
-
-    res.json({
-      success: true,
-      message: "slack通知を送信しました。slackを確認してください。",
-    });
-  } catch (error) {
-    console.error("slack通知エラー:", error.response?.data || error.message);
-    res.status(500).json({
-      error: "slack通知の送信に失敗しました",
-      details: error.response?.data || error.message,
-    });
-  }
-});
-
 // JSONを受け取る設定（これがないとPOSTが動かない）
 app.use(express.json());
 
@@ -172,7 +116,9 @@ app.get("/auth/callback", async (req, res) => {
   }
 });
 
-// Step 3: Shopify APIをテスト
+// ==================
+// 商品管理API
+// ==================
 app.get("/products/shopify", async (req, res) => {
   try {
     // データベースからアクセストークンを取得
@@ -309,6 +255,167 @@ app.post("/orders", (req, res) => {
     message: "注文を作成しました",
     user: newOrder,
   });
+});
+
+// ==================
+// Slack通知テスト
+// ==================
+app.get("/test-slack", async (req, res) => {
+  try {
+    const message = {
+      text: "slack通知テスト成功！",
+      blocks: [
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: "*在庫アラート*\n商品の在庫が少なくなっています",
+          },
+        },
+        {
+          type: "section",
+          fields: [
+            {
+              type: "mrkdwn",
+              text: "*商品ID:*\n123456789",
+            },
+            {
+              type: "mrkdwn",
+              text: "*現在の在庫:*\n5個",
+            },
+            {
+              type: "mrkdwn",
+              text: "*閾値:*\n10個",
+            },
+            {
+              type: "mrkdwn",
+              text: "*ストア:*\ndev-practice-store-app",
+            },
+          ],
+        },
+      ],
+    };
+
+    const response = await axios.post(process.env.SLACK_WEBHOOK_URL, message);
+
+    console.log("slack通知送信成功");
+
+    res.json({
+      success: true,
+      message: "slack通知を送信しました。slackを確認してください。",
+    });
+  } catch (error) {
+    console.error("slack通知エラー:", error.response?.data || error.message);
+    res.status(500).json({
+      error: "slack通知の送信に失敗しました",
+      details: error.response?.data || error.message,
+    });
+  }
+});
+
+// ==================
+// アラート設定API
+// ==================
+app.post("/alert-settings", async (req, res) => {
+  const { shop_name, product_id, threshold } = req.body;
+
+  if (!shop_name || !product_id || !threshold) {
+    return res.status(400).json({
+      error: "shop_name, product_id, thresholdは全て必須です",
+    });
+  }
+
+  if (typeof threshold !== "number" || threshold < 0) {
+    return res.status(400).json({
+      error: "thresholdは0以上の数値である必要があります",
+    });
+  }
+
+  try {
+    // shop_idを取得
+    const { data: shop, error: shopError } = await supabase
+      .from("shops")
+      .select("id")
+      .eq("shop_name", shop_name)
+      .single();
+
+    if (shopError || !shop) {
+      return res.status(400).json({
+        error: "ストアが見つかりません。先に認証してください。",
+      });
+    }
+
+    // アラート設定を保存
+    const { data, error } = await supabase
+      .from("alert_settings")
+      .insert({
+        shop_id: shop.id,
+        product_id: product_id,
+        threshold: threshold,
+        is_active: true,
+      })
+      .select();
+
+    if (error) throw error;
+
+    console.log("アラート設定を保存:", data);
+
+    res.json({
+      message: "アラート設定を保存しました",
+      data: data,
+    });
+  } catch (error) {
+    console.log("アラート設定エラー:", error);
+    res.status(400).json({
+      error: "アラート設定の保存に失敗しました",
+      details: error.message,
+    });
+  }
+});
+
+// アラート設定一覧を取得
+app.get("/alert-settings", async (req, res) => {
+  const { shop_name } = req.query;
+
+  if (!shop_name) {
+    return res.status(400).json({
+      error: "shop_nameパラメータが必要です",
+    });
+  }
+
+  try {
+    // shop_idを取得
+    const { data: shop, error: shopError } = await supabase
+      .from("shops")
+      .select("id")
+      .eq("shop_name", shop_name)
+      .single();
+
+    if (shopError || !shop) {
+      return res.status(400).json({
+        error: "ストアが見つかりません",
+      });
+    }
+
+    // アラート設定を取得
+    const { data, error } = await supabase
+      .from("alert_settings")
+      .select("*")
+      .eq("shop_id", shop.id);
+
+    if (error) throw error;
+
+    res.json({
+      shop_name: shop_name,
+      settings: data,
+    });
+  } catch (error) {
+    console.log("取得エラー:", error);
+    res.status(500).json({
+      error: "アラート設定の取得に失敗しました",
+      details: error.message,
+    });
+  }
 });
 
 app.listen(PORT, () => {
