@@ -4,6 +4,8 @@ const axios = require("axios");
 const crypto = require("crypto");
 
 const { createClient } = require("@supabase/supabase-js");
+const { text } = require("stream/consumers");
+const { threadCpuUsage } = require("process");
 
 const app = express();
 const PORT = 3000;
@@ -23,10 +25,110 @@ console.log("Supabase connected with service_role");
 app.use(express.json());
 
 // ==================
-// Shopify OAuth認証
+// ヘルパー関数
 // ==================
 
-// Step 1: アプリインストール開始
+// slack通知を送信する関数
+async function sendSlackNotification(
+  productTitle,
+  productId,
+  currentInventory,
+  threshold,
+  shopName
+) {
+  try {
+    // 特殊文字をエスケープ
+    const safeTitle = String(productTitle || "Unknown Product").replace(
+      /[<>&]/g,
+      ""
+    );
+    const safeShopName = String(shopName || "Unknown Shop").replace(
+      /[<>&]/g,
+      ""
+    );
+
+    const message = {
+      text: `在庫アラート: ${safeTitle}`,
+      blocks: [
+        {
+          type: "header",
+          text: {
+            type: "plain_text",
+            text: "在庫アラート",
+            emoji: true,
+          },
+        },
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `*${safeTitle}* の在庫が少なくなっています。`,
+          },
+        },
+        {
+          type: "section",
+          fields: [
+            {
+              type: "mrkdwn",
+              text: `*商品ID:*\n${productId}`,
+            },
+            {
+              type: "mrkdwn",
+              text: `*現在の在庫:*\n${currentInventory}個`,
+            },
+            {
+              type: "mrkdwn",
+              text: `*閾値:*\n${threshold}個`,
+            },
+            {
+              type: "mrkdwn",
+              text: `*ストア:*\n${safeShopName}`,
+            },
+          ],
+        },
+        {
+          type: "divider",
+        },
+        {
+          type: "context",
+          elements: [
+            {
+              type: "plain_text",
+              text: new Date().toLocaleString("ja-JP", {
+                timeZone: "Asia/Tokyo",
+              }),
+            },
+          ],
+        },
+      ],
+    };
+
+    const response = await axios.post(process.env.SLACK_WEBHOOK_URL, message);
+    console.log("slack通知送信成功");
+    return response.data;
+  } catch (error) {
+    console.log("slack通知エラー:", error.response?.data || error.message);
+
+    // エラー時はシンプルなメッセージを送信
+    try {
+      const simpleMessage = {
+        text: `在庫アラート\n商品: ${productTitle}\n在庫: ${currentInventory}個\n閾値: ${threshold}個`,
+      };
+      await axios.post(process.env.SLACK_WEBHOOK_URL, simpleMessage);
+      console.log("slack通知送信成功（シンプル版）");
+    } catch (fallbackError) {
+      console.error(
+        "slack通知（フォールバック）もエラー:",
+        fallbackError.message
+      );
+      throw error;
+    }
+  }
+}
+
+// ==================
+// Shopify OAuth認証
+// ==================
 app.get("/auth", (req, res) => {
   const shop = req.query.shop;
 
@@ -413,6 +515,138 @@ app.get("/alert-settings", async (req, res) => {
     console.log("取得エラー:", error);
     res.status(500).json({
       error: "アラート設定の取得に失敗しました",
+      details: error.message,
+    });
+  }
+});
+
+// ==================
+// 在庫チェック&通知機能
+// ==================
+
+// 在庫をチェックして通知
+app.get("/check-inventory", async (req, res) => {
+  const { shop_name } = req.query;
+
+  if (!shop_name) {
+    return res.status(400).json({
+      error: "shop_nameパラメータが必要です",
+    });
+  }
+
+  try {
+    console.log("在庫チェック開始:", shop_name);
+
+    // 1.ストア情報を取得
+    const { data: shop, error: shopError } = await supabase
+      .from("shops")
+      .select("*")
+      .eq("shop_name", shop_name)
+      .single();
+
+    if (shopError || !shop) {
+      return res.status(404).json({
+        error: "ストアが見つかりません",
+      });
+    }
+
+    // 2.アクティブなアラート設定を取得
+    const { data: settings, error: settingsError } = await supabase
+      .from("alert_settings")
+      .select("*")
+      .eq("shop_id", shop.id)
+      .eq("is_active", true);
+
+    if (settingsError) throw settingsError;
+
+    if (!settings || settings.length === 0) {
+      return res.json({
+        message: "アクティブなアラート設定がありません",
+        checked: 0,
+      });
+    }
+
+    console.log(`${settings.length}件のアラート設定を確認`);
+
+    // 3.各設定について在庫をチェック
+    const alerts = [];
+
+    for (const setting of settings) {
+      try {
+        // Shopify APIで商品情報を取得
+        const response = await axios.get(
+          `https://${shop.shop_name}/admin/api/2025-01/products/${setting.product_id}.json`,
+          {
+            headers: {
+              "X-Shopify-Access-Token": shop.access_token,
+            },
+          }
+        );
+
+        const product = response.data.product;
+
+        // 在庫数を計算（全バリエーションの合計）
+        const totalInventory = product.variants.reduce((sum, variant) => {
+          return sum + (variant.inventory_quantity || 0);
+        }, 0);
+
+        console.log(
+          `商品: ${product.title}, 在庫: ${totalInventory}, 閾値: ${setting.threshold}`
+        );
+
+        // 閾値チェック
+        if (totalInventory <= setting.threshold) {
+          console.log(`アラート発動: ${product.title}`);
+
+          //slack通知送信
+          await sendSlackNotification(
+            product.title,
+            product.id,
+            totalInventory,
+            setting.threshold,
+            shop.shop_name
+          );
+
+          alerts.push({
+            product_id: product.id,
+            product_title: product.title,
+            current_inventory: totalInventory,
+            threshold: setting.threshold,
+            alerted: true,
+          });
+        } else {
+          alerts.push({
+            product_id: product.id,
+            product_title: product.title,
+            current_inventory: totalInventory,
+            threshold: setting.threshold,
+            alerted: false,
+          });
+        }
+      } catch (error) {
+        console.error(
+          `商品ID ${setting.product_id} の取得エラー:`,
+          error.response?.data || error.message
+        );
+        alerts.push({
+          product_id: setting.product_id,
+          error: error.response?.data?.errors || error.message,
+        });
+      }
+    }
+
+    console.log("在庫チェック完了");
+
+    res.json({
+      message: "在庫チェック完了",
+      shop_name: shop.shop_name,
+      checked: settings.length,
+      alerts: alerts,
+    });
+  } catch (error) {
+    console.error("在庫チェックエラー:", error);
+    res.status(500).json({
+      error: "在庫チェックに失敗しました",
       details: error.message,
     });
   }
