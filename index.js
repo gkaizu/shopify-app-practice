@@ -652,6 +652,147 @@ app.get("/check-inventory", async (req, res) => {
   }
 });
 
+// ==================
+// 管理画面
+// ==================
+app.get("/dashboard", async (req, res) => {
+  const { shop_name } = req.query;
+
+  if (!shop_name) {
+    return res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>在庫アラートダッシュボード</title>
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+          h1 { color: #333; }
+          input[type="text"] { width: 100%; padding: 10px; font-size: 16px; }
+          button { background: #5865F2; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+          button:hover { background: #4752C4; }
+        </style>
+      </head>
+        <body>
+        <h1>📦 在庫アラートダッシュボード</h1>
+        <form action="/dashboard" method="GET">
+          <label>ストア名:</label><br>
+          <input type="text" name="shop_name" placeholder="store-123456.myshopify.com"><br>
+          <button type="submit">表示</button>
+        </form>
+      </body>
+      </html>
+    `);
+  }
+
+  try {
+    // ストア情報を取得
+    const { data: shop, error: shopError } = await supabase
+      .from("shops")
+      .select("*")
+      .eq("shop_name", shop_name)
+      .single();
+
+    if (shopError || !shop) {
+      return res.send(`
+        <h1>ストアが見つかりませんでした</h1>
+        <p>${shop_name}</p>
+        <a href="/dashboard">戻る</a>
+      `);
+    }
+
+    // アラート設定を取得
+    const { data: settings } = await supabase
+      .from("alert_settings")
+      .select("*")
+      .eq("shop_id", shop.id);
+
+    // HTML生成
+    let html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>在庫アラートダッシュボード</title>
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 1000px; margin: 50px auto; padding: 20px; }
+          h1 { color: #333; }
+          h2 { color: #5865F2; margin-top: 30px; }
+          table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+          th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+          th { background-color: #5865F2; color: white; }
+          tr:hover { background-color: #f5f5f5; }
+          .button { display: inline-block; background: #5865F2; color: white; padding: 12px 24px; border-radius: 4px; text-decoration: none; margin: 10px 0; }
+          .button:hover { background: #4752C4; }
+          .back { background: #888; }
+          .back:hover { background: #666; }
+          .status-active { color: green; font-weight: bold; }
+          .status-inactive { color: red; }
+        </style>
+      </head>
+      <body>
+        <h1>📦 在庫アラートダッシュボード</h1>
+        <p><strong>ストア:</strong> ${shop_name}</p>
+        
+        <h2>アラート設定 (${settings?.length || 0}件)</h2>
+    `;
+
+    if (settings && settings.length > 0) {
+      html += `
+      <table>
+        <tr>
+          <th>ID</th>
+          <th>商品ID</th>
+          <th>閾値</th>
+          <th>状態</th>
+          <th>作成日</th>
+        </tr>
+      `;
+
+      settings.forEach((s) => {
+        const statusClass = s.is_active ? "status-active" : "status-inactive";
+        const statusText = s.is_active ? "有効" : "無効";
+        const createdAt = new Date(s.created_at).toLocaleString("ja-JP", {
+          timeZone: "Asia/Tokyo",
+        });
+
+        html += `
+          <tr>
+            <td>${s.id}</td>
+            <td>${s.product_id}</td>
+            <td>${s.threshold}個</td>
+            <td class="${statusClass}">${statusText}</td>
+            <td>${createdAt}</td>
+          </tr>
+        `;
+      });
+
+      html += `</table>`;
+    } else {
+      html += "<p>アラート設定がありません</p>";
+    }
+
+    html += `
+        <h2>アクション</h2>
+        <a href="/check-inventory?shop_name=${encodeURIComponent(
+          shop_name
+        )}" class="button">在庫チェックを実行</a>
+        <br>
+        <a href="/dashboard" class="button back">別のストアを表示</a>
+      </body>
+      </html>
+    `;
+
+    res.send(html);
+  } catch (error) {
+    res.status(500).send(`
+      <h1>エラー</h1>
+      <p>${error.message}</p>
+      <a href="/dashboard">戻る</a>
+      `);
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
