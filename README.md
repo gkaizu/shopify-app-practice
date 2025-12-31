@@ -17,12 +17,14 @@ Shopifyストアの在庫が閾値を下回るとSlackに通知するアプリ
 - [x] Slack App連携
 - [x] 在庫アラート機能
 - [x] 管理画面（Dashboard）
+- [x] Docker化
+- [x] Render.comデプロイ
+- [x] GitHub Actions（CI/CD）
+- [x] ESLint/Vitest導入
 
 ### 次の予定
-- [ ] Docker化
-- [ ] Render.comデプロイ
-- [ ] GitHub Actions（CI/CD）
 - [ ] 管理画面CRUD強化
+- [ ] Metafield版の実装
 - [ ] 定期実行（cron）
 
 ---
@@ -40,6 +42,21 @@ Shopifyストアの在庫が閾値を下回るとSlackに通知するアプリ
 - 在庫チェック&通知機能
 - 管理画面（Dashboard）作成
 
+**Day 7（2025-12-30）**
+- Docker化
+- docker-compose.yml作成
+- 開発環境の統一
+
+**Day 8（2025-12-31）**
+- Render.comにデプロイ
+- 環境変数設定
+- 本番環境で動作確認
+
+**Day 9（2026-01-01）**
+- GitHub Actions（CI/CD）実装
+- ESLint/Vitest導入
+- 自動デプロイ確認
+
 ---
 
 ## 技術スタック
@@ -52,6 +69,8 @@ Shopifyストアの在庫が閾値を下回るとSlackに通知するアプリ
 - **Notification:** Slack App (Incoming Webhooks)
 - **Containerization:** Docker, Docker Compose
 - **Deployment:** Render.com
+- **CI/CD:** GitHub Actions
+- **Code Quality:** ESLint, Vitest
 - **Tools:** Git, curl
 
 ---
@@ -73,6 +92,10 @@ Shopifyストアの在庫が閾値を下回るとSlackに通知するアプリ
    - PostgreSQLで設定を保存
    - サーバー再起動しても残る
 
+5. **CI/CD**
+   - Git pushで自動デプロイ
+   - コード品質の自動チェック
+
 ---
 
 ## セットアップ
@@ -92,6 +115,16 @@ docker-compose up
 
 ---
 
+## デモ
+
+**本番環境:**
+https://shopify-app-practice.onrender.com
+
+**ダッシュボード:**
+https://shopify-app-practice.onrender.com/dashboard
+
+---
+
 ## 背景
 
 ニュージーランドでバリスタ（役職：スーパーバイザー）として勤務した際、在庫切れによる営業支障を経験。
@@ -99,15 +132,7 @@ docker-compose up
 
 ---
 
-## CI/CD
-
-GitHub Actionsで自動デプロイを実装済み。
-`main`ブランチへのpushで自動的にRender.comにデプロイされます。
-
 ---
-
-
-
 
 # 🌏 English Version
 
@@ -130,12 +155,14 @@ A Shopify inventory monitoring system that sends Slack alerts when product stock
 - [x] Slack App integration
 - [x] Inventory alert feature
 - [x] Dashboard UI
+- [x] Dockerization
+- [x] Deploy to Render.com
+- [x] GitHub Actions (CI/CD)
+- [x] ESLint/Vitest setup
 
 ### Roadmap
-- [ ] Dockerization
-- [ ] Deploy to Render.com
-- [ ] GitHub Actions (CI/CD)
 - [ ] Enhanced dashboard CRUD
+- [ ] Metafield-based version
 - [ ] Scheduled automatic checks (cron)
 
 ---
@@ -150,6 +177,8 @@ A Shopify inventory monitoring system that sends Slack alerts when product stock
 - **Notification:** Slack App (Incoming Webhooks)
 - **Containerization:** Docker, Docker Compose
 - **Deployment:** Render.com
+- **CI/CD:** GitHub Actions
+- **Code Quality:** ESLint, Vitest
 - **Tools:** Git, curl
 
 ---
@@ -172,6 +201,10 @@ A Shopify inventory monitoring system that sends Slack alerts when product stock
    - PostgreSQL for reliable storage
    - RLS for multi-tenant security
 
+5. **CI/CD**
+   - Automated deployment on Git push
+   - Automated code quality checks
+
 ---
 
 ## Setup
@@ -191,8 +224,18 @@ docker-compose up
 
 ---
 
+## Demo
+
+**Production:**
+https://shopify-app-practice.onrender.com
+
+**Dashboard:**
+https://shopify-app-practice.onrender.com/dashboard
+
+---
+
 ## Background
 
-Built from hands-on experience as a barista (Position:supervisor) in New Zealand, where inventory shortages frequently disrupted operations. This app addresses that pain point through automated monitoring.
+Built from hands-on experience as a barista supervisor in New Zealand, where inventory shortages frequently disrupted operations. This app addresses that pain point through automated monitoring.
 
 ---
