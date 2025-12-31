@@ -99,7 +99,15 @@ docker-compose up
 
 ---
 
+## CI/CD
+
+GitHub Actionsで自動デプロイを実装済み。
+`main`ブランチへのpushで自動的にRender.comにデプロイされます。
+
 ---
+
+
+
 
 # 🌏 English Version
 
