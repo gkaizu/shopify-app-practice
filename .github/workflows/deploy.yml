@@ -1,0 +1,24 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Trigger Render Deploy
+        run: |
+          echo "Code pushed to main branch"
+          echo "Render will auto-deploy via webhook"
+      
+      - name: Deployment notification
+        run: |
+          echo "✅ Deployment triggered successfully"
+          echo "Check Render dashboard for deployment status"
