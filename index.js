@@ -4,8 +4,6 @@ const axios = require("axios");
 const crypto = require("crypto");
 
 const { createClient } = require("@supabase/supabase-js");
-const { text } = require("stream/consumers");
-const { threadCpuUsage } = require("process");
 
 const app = express();
 const PORT = 3000;
@@ -155,7 +153,7 @@ app.get("/auth", (req, res) => {
 
 // Step 2: Shopifyからのコールバック
 app.get("/auth/callback", async (req, res) => {
-  const { shop, code, state } = req.query;
+  const { shop, code } = req.query;
 
   if (!shop || !code) {
     return res.status(400).send("Missing required parameters");
@@ -406,7 +404,7 @@ app.get("/test-slack", async (req, res) => {
       ],
     };
 
-    const response = await axios.post(process.env.SLACK_WEBHOOK_URL, message);
+    await axios.post(process.env.SLACK_WEBHOOK_URL, message);
 
     console.log("slack通知送信成功");
 
