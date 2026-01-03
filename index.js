@@ -590,9 +590,9 @@ app.get("/check-inventory", async (req, res) => {
 // ==================
 // 管理画面
 // ==================
-app.get("/dashboard", async (req, res) => {
+app.get('/dashboard', async (req, res) => {
   const { shop_name } = req.query;
-
+  
   if (!shop_name) {
     return res.send(`
       <!DOCTYPE html>
@@ -601,130 +601,476 @@ app.get("/dashboard", async (req, res) => {
         <meta charset="UTF-8">
         <title>在庫アラートダッシュボード</title>
         <style>
-          body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
-          h1 { color: #333; }
-          input[type="text"] { width: 100%; padding: 10px; font-size: 16px; }
-          button { background: #5865F2; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+          body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 50px auto; 
+            padding: 20px; 
+            background: #f5f5f5;
+          }
+          .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          }
+          h1 { color: #333; margin-top: 0; }
+          input[type="text"] { 
+            width: 100%; 
+            padding: 12px; 
+            font-size: 16px; 
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+          }
+          button { 
+            background: #5865F2; 
+            color: white; 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            margin-top: 10px;
+            width: 100%;
+          }
           button:hover { background: #4752C4; }
         </style>
       </head>
-        <body>
-        <h1>📦 在庫アラートダッシュボード</h1>
-        <form action="/dashboard" method="GET">
-          <label>ストア名:</label><br>
-          <input type="text" name="shop_name" placeholder="store-123456.myshopify.com"><br>
-          <button type="submit">表示</button>
-        </form>
+      <body>
+        <div class="container">
+          <h1>📦 在庫アラートダッシュボード</h1>
+          <form action="/dashboard" method="GET">
+            <label>ストア名:</label><br>
+            <input type="text" name="shop_name" placeholder="store-xxxx.myshopify.com" required><br>
+            <button type="submit">ダッシュボードを開く</button>
+          </form>
+        </div>
       </body>
       </html>
     `);
   }
-
+  
   try {
-    // ストア情報を取得
+    // ストア情報取得
     const { data: shop, error: shopError } = await supabase
-      .from("shops")
-      .select("*")
-      .eq("shop_name", shop_name)
+      .from('shops')
+      .select('*')
+      .eq('shop_name', shop_name)
       .single();
-
+    
     if (shopError || !shop) {
       return res.send(`
-        <h1>ストアが見つかりませんでした</h1>
+        <h1>❌ ストアが見つかりません</h1>
         <p>${shop_name}</p>
         <a href="/dashboard">戻る</a>
       `);
     }
-
-    // アラート設定を取得
+    
+    // アラート設定取得
     const { data: settings } = await supabase
-      .from("alert_settings")
-      .select("*")
-      .eq("shop_id", shop.id);
-
+      .from('alert_settings')
+      .select('*')
+      .eq('shop_id', shop.id)
+      .order('created_at', { ascending: false });
+    
     // HTML生成
-    let html = `
+    res.send(`
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>在庫アラートダッシュボード</title>
         <style>
-          body { font-family: Arial, sans-serif; max-width: 1000px; margin: 50px auto; padding: 20px; }
-          h1 { color: #333; }
-          h2 { color: #5865F2; margin-top: 30px; }
-          table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-          th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-          th { background-color: #5865F2; color: white; }
-          tr:hover { background-color: #f5f5f5; }
-          .button { display: inline-block; background: #5865F2; color: white; padding: 12px 24px; border-radius: 4px; text-decoration: none; margin: 10px 0; }
-          .button:hover { background: #4752C4; }
-          .back { background: #888; }
-          .back:hover { background: #666; }
-          .status-active { color: green; font-weight: bold; }
-          .status-inactive { color: red; }
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f7f8fa;
+            padding: 20px;
+          }
+          .container { max-width: 1200px; margin: 0 auto; }
+          .header {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          }
+          h1 { color: #1a1a1a; font-size: 28px; margin-bottom: 8px; }
+          .shop-name { color: #666; font-size: 14px; }
+          
+          .actions {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          }
+          .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            margin-right: 10px;
+            margin-bottom: 10px;
+          }
+          .btn-primary { background: #5865F2; color: white; }
+          .btn-primary:hover { background: #4752C4; }
+          .btn-secondary { background: #f0f0f0; color: #333; }
+          .btn-secondary:hover { background: #e0e0e0; }
+          .btn-success { background: #43b581; color: white; }
+          .btn-success:hover { background: #3ca374; }
+          
+          .settings-section {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          }
+          h2 { font-size: 20px; margin-bottom: 20px; color: #1a1a1a; }
+          
+          table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+          th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+          }
+          th {
+            background: #f7f8fa;
+            font-weight: 600;
+            color: #666;
+            font-size: 13px;
+            text-transform: uppercase;
+          }
+          tr:hover { background: #f9f9f9; }
+          
+          .status-active { 
+            color: #43b581; 
+            font-weight: 600;
+          }
+          .status-inactive { 
+            color: #f04747; 
+            font-weight: 600;
+          }
+          
+          .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            margin-right: 5px;
+          }
+          .btn-edit { background: #5865F2; color: white; }
+          .btn-edit:hover { background: #4752C4; }
+          .btn-delete { background: #f04747; color: white; }
+          .btn-delete:hover { background: #d84040; }
+          
+          .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+          }
+          
+          /* モーダル */
+          .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+          }
+          .modal-content {
+            background: white;
+            max-width: 500px;
+            margin: 100px auto;
+            padding: 24px;
+            border-radius: 8px;
+          }
+          .modal h3 { margin-bottom: 20px; }
+          .form-group {
+            margin-bottom: 16px;
+          }
+          label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 14px;
+          }
+          input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+          }
+          .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+          }
+          .modal-buttons button {
+            flex: 1;
+          }
         </style>
       </head>
       <body>
-        <h1>📦 在庫アラートダッシュボード</h1>
-        <p><strong>ストア:</strong> ${shop_name}</p>
+        <div class="container">
+          <div class="header">
+            <h1>📦 在庫アラートダッシュボード</h1>
+            <div class="shop-name">ストア: ${shop_name}</div>
+          </div>
+          
+          <div class="actions">
+            <button class="btn btn-success" onclick="openAddModal()">➕ 新規アラート設定</button>
+            <a href="/check-inventory?shop_name=${encodeURIComponent(shop_name)}" class="btn btn-primary">🔍 在庫チェック実行</a>
+            <a href="/dashboard" class="btn btn-secondary">🔙 別のストア</a>
+          </div>
+          
+          <div class="settings-section">
+            <h2>アラート設定 (${settings?.length || 0}件)</h2>
+            
+            ${settings && settings.length > 0 ? `
+              <table>
+                <thead>
+                  <tr>
+                    <th>商品ID</th>
+                    <th>閾値</th>
+                    <th>状態</th>
+                    <th>作成日</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${settings.map(s => `
+                    <tr>
+                      <td>${s.product_id}</td>
+                      <td>${s.threshold}個</td>
+                      <td class="${s.is_active ? 'status-active' : 'status-inactive'}">
+                        ${s.is_active ? '✅ 有効' : '❌ 無効'}
+                      </td>
+                      <td>${new Date(s.created_at).toLocaleDateString('ja-JP')}</td>
+                      <td>
+                        <button class="btn btn-small btn-edit" onclick="openEditModal(${s.id}, ${s.threshold}, ${s.is_active})">編集</button>
+                        <button class="btn btn-small btn-delete" onclick="deleteSetting(${s.id})">削除</button>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            ` : `
+              <div class="empty-state">
+                <p>アラート設定がありません</p>
+                <p>「新規アラート設定」ボタンから追加してください</p>
+              </div>
+            `}
+          </div>
+        </div>
         
-        <h2>アラート設定 (${settings?.length || 0}件)</h2>
-    `;
-
-    if (settings && settings.length > 0) {
-      html += `
-      <table>
-        <tr>
-          <th>ID</th>
-          <th>商品ID</th>
-          <th>閾値</th>
-          <th>状態</th>
-          <th>作成日</th>
-        </tr>
-      `;
-
-      settings.forEach((s) => {
-        const statusClass = s.is_active ? "status-active" : "status-inactive";
-        const statusText = s.is_active ? "有効" : "無効";
-        const createdAt = new Date(s.created_at).toLocaleString("ja-JP", {
-          timeZone: "Asia/Tokyo",
-        });
-
-        html += `
-          <tr>
-            <td>${s.id}</td>
-            <td>${s.product_id}</td>
-            <td>${s.threshold}個</td>
-            <td class="${statusClass}">${statusText}</td>
-            <td>${createdAt}</td>
-          </tr>
-        `;
-      });
-
-      html += `</table>`;
-    } else {
-      html += "<p>アラート設定がありません</p>";
-    }
-
-    html += `
-        <h2>アクション</h2>
-        <a href="/check-inventory?shop_name=${encodeURIComponent(
-          shop_name
-        )}" class="button">在庫チェックを実行</a>
-        <br>
-        <a href="/dashboard" class="button back">別のストアを表示</a>
+        <!-- 追加モーダル -->
+        <div id="addModal" class="modal">
+          <div class="modal-content">
+            <h3>新規アラート設定</h3>
+            <form id="addForm">
+              <div class="form-group">
+                <label>商品を選択:</label>
+                <select id="productSelect" required>
+                  <option value="">読み込み中...</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>閾値（在庫がこの数以下になったら通知）:</label>
+                <input type="number" id="addThreshold" min="0" required>
+              </div>
+              <div class="modal-buttons">
+                <button type="button" class="btn btn-secondary" onclick="closeAddModal()">キャンセル</button>
+                <button type="submit" class="btn btn-success">追加</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        <!-- 編集モーダル -->
+        <div id="editModal" class="modal">
+          <div class="modal-content">
+            <h3>アラート設定を編集</h3>
+            <form id="editForm">
+              <input type="hidden" id="editId">
+              <div class="form-group">
+                <label>閾値:</label>
+                <input type="number" id="editThreshold" min="0" required>
+              </div>
+              <div class="form-group">
+                <label>状態:</label>
+                <select id="editActive">
+                  <option value="true">有効</option>
+                  <option value="false">無効</option>
+                </select>
+              </div>
+              <div class="modal-buttons">
+                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">キャンセル</button>
+                <button type="submit" class="btn btn-primary">更新</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        <script>
+          const shopName = '${shop_name}';
+          
+          // 商品一覧を読み込む
+          async function loadProducts() {
+            try {
+              const res = await fetch('/api/products?shop_name=' + encodeURIComponent(shopName));
+              const data = await res.json();
+              
+              const select = document.getElementById('productSelect');
+              select.innerHTML = '<option value="">商品を選択してください</option>';
+              
+              data.products.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.id;
+                option.textContent = p.title + ' (在庫: ' + p.inventory_quantity + '個)';
+                select.appendChild(option);
+              });
+            } catch (error) {
+              console.error('商品取得エラー:', error);
+              alert('商品一覧の取得に失敗しました');
+            }
+          }
+          
+          // 追加モーダルを開く
+          function openAddModal() {
+            document.getElementById('addModal').style.display = 'block';
+            loadProducts();
+          }
+          
+          function closeAddModal() {
+            document.getElementById('addModal').style.display = 'none';
+          }
+          
+          // 編集モーダルを開く
+          function openEditModal(id, threshold, isActive) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editThreshold').value = threshold;
+            document.getElementById('editActive').value = isActive.toString();
+            document.getElementById('editModal').style.display = 'block';
+          }
+          
+          function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+          }
+          
+          // 追加フォーム送信
+          document.getElementById('addForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const productId = document.getElementById('productSelect').value;
+            const threshold = parseInt(document.getElementById('addThreshold').value);
+            
+            try {
+              const res = await fetch('/alert-settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  shop_name: shopName,
+                  product_id: parseInt(productId),
+                  threshold: threshold
+                })
+              });
+              
+              if (res.ok) {
+                alert('アラート設定を追加しました');
+                location.reload();
+              } else {
+                const error = await res.json();
+                alert('エラー: ' + error.error);
+              }
+            } catch (error) {
+              console.error('追加エラー:', error);
+              alert('追加に失敗しました');
+            }
+          });
+          
+          // 編集フォーム送信
+          document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('editId').value;
+            const threshold = parseInt(document.getElementById('editThreshold').value);
+            const isActive = document.getElementById('editActive').value === 'true';
+            
+            try {
+              const res = await fetch('/alert-settings/' + id, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  threshold: threshold,
+                  is_active: isActive
+                })
+              });
+              
+              if (res.ok) {
+                alert('アラート設定を更新しました');
+                location.reload();
+              } else {
+                const error = await res.json();
+                alert('エラー: ' + error.error);
+              }
+            } catch (error) {
+              console.error('更新エラー:', error);
+              alert('更新に失敗しました');
+            }
+          });
+          
+          // 削除
+          async function deleteSetting(id) {
+            if (!confirm('本当に削除しますか？')) return;
+            
+            try {
+              const res = await fetch('/alert-settings/' + id, {
+                method: 'DELETE'
+              });
+              
+              if (res.ok) {
+                alert('アラート設定を削除しました');
+                location.reload();
+              } else {
+                const error = await res.json();
+                alert('エラー: ' + error.error);
+              }
+            } catch (error) {
+              console.error('削除エラー:', error);
+              alert('削除に失敗しました');
+            }
+          }
+          
+          // モーダル外クリックで閉じる
+          window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+              event.target.style.display = 'none';
+            }
+          }
+        </script>
       </body>
       </html>
-    `;
-
-    res.send(html);
+    `);
+    
   } catch (error) {
     res.status(500).send(`
-      <h1>エラー</h1>
+      <h1>❌ エラー</h1>
       <p>${error.message}</p>
       <a href="/dashboard">戻る</a>
-      `);
+    `);
   }
 });
 
