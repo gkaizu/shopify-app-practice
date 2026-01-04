@@ -380,38 +380,27 @@ app.get("/api/products", async (req, res) => {
 // ==================
 app.delete("/alert-settings/:id", async (req, res) => {
   const { id } = req.params;
-  const { threshold, is_active } = req.body;
-
-  if (threshold === undefined && is_active === undefined) {
-    return res.status(400).json({
-      error: "threshold または is_active が必要です",
-    });
-  }
-
+  
   try {
-    const updateData = {};
-    if (threshold !== undefined) updateData.threshold = threshold;
-    if (is_active !== undefined) updateData.is_active = is_active;
-
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("alert_settings")
-      .update(updateData)
-      .eq("id", id)
-      .select();
-
+      .delete()
+      .eq("id", id);
+    
     if (error) throw error;
-
-    console.log(`アラート設定を更新: ID ${id}`, data);
-
+    
+    console.log(`✅ アラート設定を削除: ID ${id}`);
+    
     res.json({
-      message: "アラート設定を更新しました",
-      data: data,
+      message: "アラート設定を削除しました",
+      id: id
     });
+    
   } catch (error) {
-    console.error("更新エラー:", error);
+    console.error("❌ 削除エラー:", error);
     res.status(500).json({
-      error: "アラート設定の更新に失敗しました",
-      details: error.message,
+      error: "アラート設定の削除に失敗しました",
+      details: error.message
     });
   }
 });
