@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# 先にLintチェック（書き方のミス）
+npm run lint
+
+# 次にテスト（機能のミス）
+# npm test
