@@ -3,6 +3,3 @@
 
 # 先にLintチェック（書き方のミス）
 npm run lint
-
-# 次にテスト（機能のミス）
-# npm test

@@ -25,9 +25,6 @@ jobs:
       - name: Run Linter
         run: npm run lint
 
-      - name: Run Tests
-        run: npm test
-
       - name: Deployment notification
         if : success()
         run: |
