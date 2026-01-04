@@ -673,6 +673,28 @@ app.get('/dashboard', async (req, res) => {
       .select('*')
       .eq('shop_id', shop.id)
       .order('created_at', { ascending: false });
+
+    // 商品情報を取得
+    let productsMap = {};
+    if (settings && settings.length > 0) {
+      try {
+        const response = await axios.get(
+          `https://${shop.shop_name}/admin/api/2025-01/products.json`,
+          {
+            headers: {
+              'X-Shopify-Access-Token': shop.access_token
+            }
+          }
+        );
+
+        // 商品IDをキーにしたマップを作成
+        response.data.products.forEach(p => {
+          productsMap[p.id] = p.title;
+        });
+      } catch (error) {
+        console.error('商品情報取得エラー:', error);
+      }
+    }
     
     // HTML生成
     res.send(`
@@ -843,7 +865,7 @@ app.get('/dashboard', async (req, res) => {
               <table>
                 <thead>
                   <tr>
-                    <th>商品ID</th>
+                    <th>商品</th>
                     <th>閾値</th>
                     <th>状態</th>
                     <th>作成日</th>
@@ -853,7 +875,11 @@ app.get('/dashboard', async (req, res) => {
                 <tbody>
                   ${settings.map(s => `
                     <tr>
-                      <td>${s.product_id}</td>
+                      <td>
+                        ${productsMap[s.product_id] || 'ID: ' + s.product_id}
+                        <br>
+                        <small style="color: #999;">ID: ${s.product_id}</small>
+                      </td>
                       <td>${s.threshold}個</td>
                       <td class="${s.is_active ? 'status-active' : 'status-inactive'}">
                         ${s.is_active ? '✅ 有効' : '❌ 無効'}
