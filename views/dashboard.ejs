@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>在庫アラートダッシュボード</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+  <% if (!shop_name) { %>
+    <div class="container">
+      <h1>📦 在庫アラートダッシュボード</h1>
+      <form action="/dashboard" method="GET">
+        <label>ストア名:</label><br>
+        <input type="text" name="shop_name" placeholder="store-xxxx.myshopify.com" required><br>
+        <button type="submit">ダッシュボードを開く</button>
+      </form>
+    </div>
+  <% } else { %>
+    <div class="container">
+      <div class="header">
+        <h1>📦 在庫アラートダッシュボード</h1>
+        <div class="shop-name">ストア: <%= shop_name %></div>
+      </div>
+      
+      <div class="actions">
+        <button class="btn btn-success" onclick="openAddModal()">➕ 新規アラート設定</button>
+        <a href="/check-inventory?shop_name=<%= encodeURIComponent(shop_name) %>" class="btn btn-primary">🔍 在庫チェック実行</a>
+        <a href="/dashboard" class="btn btn-secondary">🔙 別のストア</a>
+      </div>
+      
+      <div class="settings-section">
+        <h2>アラート設定 (<%= settings ? settings.length : 0 %>件)</h2>
+        
+        <% if (settings && settings.length > 0) { %>
+          <table>
+            <thead>
+              <tr>
+                <th>商品</th>
+                <th>閾値</th>
+                <th>状態</th>
+                <th>作成日</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% settings.forEach(s => { %>
+                <tr>
+                  <td>
+                    <%= productsMap[s.product_id] || 'ID: ' + s.product_id %>
+                    <br>
+                    <small style="color: #999;">ID: <%= s.product_id %></small>
+                  </td>
+                  <td><%= s.threshold %>個</td>
+                  <td class="<%= s.is_active ? 'status-active' : 'status-inactive' %>">
+                    <%= s.is_active ? '✅ 有効' : '❌ 無効' %>
+                  </td>
+                  <td><%= new Date(s.created_at).toLocaleDateString('ja-JP') %></td>
+                  <td>
+                    <button class="btn btn-small btn-edit" onclick="openEditModal(<%= s.id %>, <%= s.threshold %>, <%= s.is_active %>)">編集</button>
+                    <button class="btn btn-small btn-delete" onclick="deleteSetting(<%= s.id %>)">削除</button>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <div class="empty-state">
+            <p>アラート設定がありません</p>
+            <p>「新規アラート設定」ボタンから追加してください</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+    
+    <div id="addModal" class="modal">
+      <div class="modal-content">
+        <h3>新規アラート設定</h3>
+        <form id="addForm">
+          <div class="form-group">
+            <label>商品を選択:</label>
+            <select id="productSelect" required>
+              <option value="">読み込み中...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>閾値（在庫がこの数以下になったら通知）:</label>
+            <input type="number" id="addThreshold" min="0" required>
+          </div>
+          <div class="modal-buttons">
+            <button type="button" class="btn btn-secondary" onclick="closeAddModal()">キャンセル</button>
+            <button type="submit" class="btn btn-success">追加</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <h3>アラート設定を編集</h3>
+        <form id="editForm">
+          <input type="hidden" id="editId">
+          <div class="form-group">
+            <label>閾値:</label>
+            <input type="number" id="editThreshold" min="0" required>
+          </div>
+          <div class="form-group">
+            <label>状態:</label>
+            <select id="editActive">
+              <option value="true">有効</option>
+              <option value="false">無効</option>
+            </select>
+          </div>
+          <div class="modal-buttons">
+            <button type="button" class="btn btn-secondary" onclick="closeEditModal()">キャンセル</button>
+            <button type="submit" class="btn btn-primary">更新</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const shopName = '<%= shop_name %>';
+    </script>
+    <script src="/js/dashboard.js"></script>
+  <% } %>
+</body>
+</html>

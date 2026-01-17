@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>エラー</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 100px auto;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 { color: #f04747; }
+    a {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #5865F2;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    a:hover { background: #4752C4; }
+  </style>
+</head>
+<body>
+  <h1>❌ <%= title %></h1>
+  <p><%= message %></p>
+  <a href="/dashboard">戻る</a>
+</body>
+</html>
