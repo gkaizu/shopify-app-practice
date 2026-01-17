@@ -1,6 +1,5 @@
 /* eslint-disable no-undef, no-unused-vars */
 
-// 商品一覧を読み込む
 async function loadProducts() {
   try {
     const res = await fetch('/api/products?shop_name=' + encodeURIComponent(shopName));
@@ -16,12 +15,10 @@ async function loadProducts() {
       select.appendChild(option);
     });
   } catch (error) {
-    console.error('商品取得エラー:', error);
     alert('商品一覧の取得に失敗しました');
   }
 }
 
-// 追加モーダルを開く
 function openAddModal() {
   document.getElementById('addModal').style.display = 'block';
   loadProducts();
@@ -31,7 +28,6 @@ function closeAddModal() {
   document.getElementById('addModal').style.display = 'none';
 }
 
-// 編集モーダルを開く
 function openEditModal(id, threshold, isActive) {
   document.getElementById('editId').value = id;
   document.getElementById('editThreshold').value = threshold;
@@ -43,7 +39,6 @@ function closeEditModal() {
   document.getElementById('editModal').style.display = 'none';
 }
 
-// 追加フォーム送信
 document.getElementById('addForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   
@@ -69,12 +64,10 @@ document.getElementById('addForm').addEventListener('submit', async (e) => {
       alert('エラー: ' + error.error);
     }
   } catch (error) {
-    console.error('追加エラー:', error);
     alert('追加に失敗しました');
   }
 });
 
-// 編集フォーム送信
 document.getElementById('editForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   
@@ -100,12 +93,10 @@ document.getElementById('editForm').addEventListener('submit', async (e) => {
       alert('エラー: ' + error.error);
     }
   } catch (error) {
-    console.error('更新エラー:', error);
     alert('更新に失敗しました');
   }
 });
 
-// 削除
 async function deleteSetting(id) {
   if (!confirm('本当に削除しますか？')) return;
   
@@ -122,12 +113,10 @@ async function deleteSetting(id) {
       alert('エラー: ' + error.error);
     }
   } catch (error) {
-    console.error('削除エラー:', error);
     alert('削除に失敗しました');
   }
 }
 
-// モーダル外クリックで閉じる
 window.onclick = function(event) {
   if (event.target.classList.contains('modal')) {
     event.target.style.display = 'none';

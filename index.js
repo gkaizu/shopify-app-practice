@@ -24,12 +24,7 @@ const supabase = createClient(
 
 console.log("Supabase connected with service_role");
 
-// JSONを受け取る設定（これがないとPOSTが動かない）
 app.use(express.json());
-
-// ==================
-// ヘルパー関数
-// ==================
 
 // slack通知を送信する関数
 async function sendSlackNotification(
@@ -107,31 +102,20 @@ async function sendSlackNotification(
     };
 
     const response = await axios.post(process.env.SLACK_WEBHOOK_URL, message);
-    console.log("slack通知送信成功");
     return response.data;
   } catch (error) {
-    console.log("slack通知エラー:", error.response?.data || error.message);
-
-    // エラー時はシンプルなメッセージを送信
     try {
       const simpleMessage = {
         text: `在庫アラート\n商品: ${productTitle}\n在庫: ${currentInventory}個\n閾値: ${threshold}個`,
       };
       await axios.post(process.env.SLACK_WEBHOOK_URL, simpleMessage);
-      console.log("slack通知送信成功（シンプル版）");
     } catch (fallbackError) {
-      console.error(
-        "slack通知（フォールバック）もエラー:",
-        fallbackError.message
-      );
+      console.error("slack通知（フォールバック）もエラー:", fallbackError.message);
       throw error;
     }
   }
 }
 
-// ==================
-// Shopify OAuth認証
-// ==================
 app.get("/auth", (req, res) => {
   const shop = req.query.shop;
 
@@ -143,20 +127,13 @@ app.get("/auth", (req, res) => {
       );
   }
 
-  // リダイレクトURL
   const redirectUri = `${HOST}/auth/callback`;
-
-  // nonce（セキュリティ用ランダム文字列）
   const nonce = crypto.randomBytes(16).toString("hex");
-
-  // Shopifyの認証ページURL
   const authUrl = `https://${shop}/admin/oauth/authorize?client_id=${SHOPIFY_API_KEY}&scope=${SHOPIFY_SCOPES}&redirect_uri=${redirectUri}&state=${nonce}`;
 
-  console.log("認証URLにリダイレクト:", authUrl);
   res.redirect(authUrl);
 });
 
-// Step 2: Shopifyからのコールバック
 app.get("/auth/callback", async (req, res) => {
   const { shop, code } = req.query;
 
@@ -165,9 +142,6 @@ app.get("/auth/callback", async (req, res) => {
   }
 
   try {
-    console.log("アクセストークンを取得中...");
-
-    // Shopifyからアクセストークンを取得
     const tokenResponse = await axios.post(
       `https://${shop}/admin/oauth/access_token`,
       {
@@ -178,10 +152,8 @@ app.get("/auth/callback", async (req, res) => {
     );
 
     const accessToken = tokenResponse.data.access_token;
-    console.log("アクセストークン取得成功！");
 
-    // Supabase(PostgreSQL)に保存
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("shops")
       .upsert(
         {
@@ -195,13 +167,9 @@ app.get("/auth/callback", async (req, res) => {
       .select();
 
     if (error) {
-      console.log("データベース保存エラー:", error);
       throw error;
     }
 
-    console.log("データベースに保存成功:", data);
-
-    // 互換性のためグローバル変数にも保存
     global.shopifyAccessToken = accessToken;
     global.shopName = shop;
 
@@ -212,7 +180,7 @@ app.get("/auth/callback", async (req, res) => {
       <p><a href="/products/shopify">Shopifyの商品データを取得する</a></p>
     `);
   } catch (error) {
-    console.log("認証エラー:", error.response?.data || error.message);
+    console.error("認証エラー:", error.response?.data || error.message);
     res
       .status(500)
       .send(
@@ -221,9 +189,6 @@ app.get("/auth/callback", async (req, res) => {
   }
 });
 
-// ==================
-// アラート設定API
-// ==================
 app.post("/alert-settings", async (req, res) => {
   const { shop_name, product_id, threshold } = req.body;
 
@@ -253,7 +218,6 @@ app.post("/alert-settings", async (req, res) => {
       });
     }
 
-    // アラート設定を保存
     const { data, error } = await supabase
       .from("alert_settings")
       .insert({
@@ -266,14 +230,12 @@ app.post("/alert-settings", async (req, res) => {
 
     if (error) throw error;
 
-    console.log("アラート設定を保存:", data);
-
     res.json({
       message: "アラート設定を保存しました",
       data: data,
     });
   } catch (error) {
-    console.log("アラート設定エラー:", error);
+    console.error("アラート設定エラー:", error);
     res.status(400).json({
       error: "アラート設定の保存に失敗しました",
       details: error.message,
@@ -281,7 +243,6 @@ app.post("/alert-settings", async (req, res) => {
   }
 });
 
-// アラート設定一覧を取得
 app.get("/alert-settings", async (req, res) => {
   const { shop_name } = req.query;
 
@@ -305,7 +266,6 @@ app.get("/alert-settings", async (req, res) => {
       });
     }
 
-    // アラート設定を取得
     const { data, error } = await supabase
       .from("alert_settings")
       .select("*")
@@ -318,7 +278,7 @@ app.get("/alert-settings", async (req, res) => {
       settings: data,
     });
   } catch (error) {
-    console.log("取得エラー:", error);
+    console.error("取得エラー:", error);
     res.status(500).json({
       error: "アラート設定の取得に失敗しました",
       details: error.message,
@@ -326,9 +286,6 @@ app.get("/alert-settings", async (req, res) => {
   }
 });
 
-// ==================
-// 商品一覧取得API 本番用（JSON形式で必要なデータだけを取得）
-// ==================
 app.get("/api/products", async (req, res) => {
   const { shop_name } = req.query;
 
@@ -371,7 +328,7 @@ app.get("/api/products", async (req, res) => {
 
     res.json({ products });
   } catch (error) {
-    console.log("商品取得エラー:", error.response?.data || error.message);
+    console.error("商品取得エラー:", error.response?.data || error.message);
     res.status(500).json({
       error: "商品一覧の取得に失敗しました",
       details: error.message,
@@ -379,9 +336,6 @@ app.get("/api/products", async (req, res) => {
   }
 });
 
-// ==================
-// DELETE API （削除機能）
-// ==================
 app.delete("/alert-settings/:id", async (req, res) => {
   const { id } = req.params;
   
@@ -409,9 +363,6 @@ app.delete("/alert-settings/:id", async (req, res) => {
   }
 });
 
-// ==================
-// PUT API （更新機能）
-// ==================
 app.put("/alert-settings/:id", async (req, res) => {
   const { id } = req.params;
   const { threshold, is_active } = req.body;
@@ -435,8 +386,6 @@ app.put("/alert-settings/:id", async (req, res) => {
 
     if (error) throw error;
 
-    console.log(`アラート設定を更新: ID ${id}`, data);
-
     res.json({
       message: "アラート設定を更新しました",
       data: data,
@@ -450,9 +399,6 @@ app.put("/alert-settings/:id", async (req, res) => {
   }
 });
 
-// ==================
-// 在庫チェック&通知機能
-// ==================
 app.get("/check-inventory", async (req, res) => {
   const { shop_name } = req.query;
 
@@ -463,9 +409,6 @@ app.get("/check-inventory", async (req, res) => {
   }
 
   try {
-    console.log("在庫チェック開始:", shop_name);
-
-    // 1.ストア情報を取得
     const { data: shop, error: shopError } = await supabase
       .from("shops")
       .select("*")
@@ -478,7 +421,6 @@ app.get("/check-inventory", async (req, res) => {
       });
     }
 
-    // 2.アクティブなアラート設定を取得
     const { data: settings, error: settingsError } = await supabase
       .from("alert_settings")
       .select("*")
@@ -494,14 +436,10 @@ app.get("/check-inventory", async (req, res) => {
       });
     }
 
-    console.log(`${settings.length}件のアラート設定を確認`);
-
-    // 3.各設定について在庫をチェック
     const alerts = [];
 
     for (const setting of settings) {
       try {
-        // Shopify APIで商品情報を取得
         const response = await axios.get(
           `https://${shop.shop_name}/admin/api/2025-01/products/${setting.product_id}.json`,
           {
@@ -512,21 +450,11 @@ app.get("/check-inventory", async (req, res) => {
         );
 
         const product = response.data.product;
-
-        // 在庫数を計算（全バリエーションの合計）
         const totalInventory = product.variants.reduce((sum, variant) => {
           return sum + (variant.inventory_quantity || 0);
         }, 0);
 
-        console.log(
-          `商品: ${product.title}, 在庫: ${totalInventory}, 閾値: ${setting.threshold}`
-        );
-
-        // 閾値チェック
         if (totalInventory <= setting.threshold) {
-          console.log(`アラート発動: ${product.title}`);
-
-          //slack通知送信
           await sendSlackNotification(
             product.title,
             product.id,
@@ -552,18 +480,13 @@ app.get("/check-inventory", async (req, res) => {
           });
         }
       } catch (error) {
-        console.error(
-          `商品ID ${setting.product_id} の取得エラー:`,
-          error.response?.data || error.message
-        );
+        console.error(`商品ID ${setting.product_id} の取得エラー:`, error.response?.data || error.message);
         alerts.push({
           product_id: setting.product_id,
           error: error.response?.data?.errors || error.message,
         });
       }
     }
-
-    console.log("在庫チェック完了");
 
     res.json({
       message: "在庫チェック完了",
@@ -580,9 +503,6 @@ app.get("/check-inventory", async (req, res) => {
   }
 });
 
-// ==================
-// 管理画面
-// ==================
 app.get('/dashboard', async (req, res) => {
   const { shop_name } = req.query;
   
@@ -648,13 +568,8 @@ app.get('/dashboard', async (req, res) => {
   }
 });
 
-// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-ここからデバック用エンドポイント*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
-// ==================
-// 商品一覧取得API デバック・確認用
-// ==================
 app.get("/products/shopify", async (req, res) => {
   try {
-    // データベースからアクセストークンを取得
     const { data: shops, error } = await supabase
       .from("shops")
       .select("*")
@@ -666,16 +581,10 @@ app.get("/products/shopify", async (req, res) => {
         <h1>認証が必要です</h1>
         <p>まず認証してください:</p>
         <p><a href="/auth?shop=dev-practice-store-app.myshopify.com">認証を開始</a></p>
-        <p>* dev-practice-store-app.myshopify.com を実際のストアURLに置き換えてください</p>
       `);
     }
 
     const { shop_name, access_token } = shops;
-
-    console.log("データベースからトークン取得:", shop_name);
-    console.log("Shopify APIを呼び出し中...");
-
-    // Shopify Admin APIで商品一覧を取得
     const response = await axios.get(
       `https://${shop_name}/admin/api/2025-01/products.json`,
       {
@@ -685,10 +594,9 @@ app.get("/products/shopify", async (req, res) => {
       }
     );
 
-    console.log("商品データ取得成功！");
     res.json(response.data);
   } catch (error) {
-    console.log("API呼び出しエラー:", error.response?.data || error.message);
+    console.error("API呼び出しエラー:", error.response?.data || error.message);
     res.status(500).json({
       error: "Shopify API呼び出しに失敗しました",
       details: error.response?.data || error.message,
@@ -696,7 +604,6 @@ app.get("/products/shopify", async (req, res) => {
   }
 });
 
-// GET：ルート
 app.get("/", (req, res) => {
   res.send(`
   <h1>Shopify Inventory Alert App</h1>
@@ -709,7 +616,6 @@ app.get("/", (req, res) => {
 `);
 });
 
-// GET：商品一覧
 app.get("/products", (req, res) => {
   const products = [
     { id: 1, name: "Product A", price: 1000 },
@@ -718,36 +624,27 @@ app.get("/products", (req, res) => {
   res.json(products);
 });
 
-// POST：商品追加
 app.post("/products", (req, res) => {
-  // リクエストボディからデータを取得
   const newProduct = req.body;
 
-  // バリデーション：nameとpriceが存在するかチェック
   if (!newProduct.name || !newProduct.price) {
     return res.status(400).json({
       error: "nameとpriceは必須です",
     });
   }
 
-  // priceが数値かチェック
   if (typeof newProduct.price !== "number") {
     return res.status(400).json({
       error: "priceは数値である必要があります",
     });
   }
 
-  // 受け取ったデータを確認
-  console.log("受け取ったデータ：", newProduct);
-
-  // レスポンスを返す
   res.json({
     message: "商品を追加しました",
     product: newProduct,
   });
 });
 
-// GET：ユーザー一覧
 app.get("/users", (req, res) => {
   const users = [
     { id: 1, name: "Sam", age: 19 },
@@ -756,22 +653,15 @@ app.get("/users", (req, res) => {
   res.json(users);
 });
 
-// POST：ユーザー追加
 app.post("/users", (req, res) => {
-  // リクエストボディからデータを取得
   const newUser = req.body;
 
-  // 受け取ったデータを確認
-  console.log("受け取ったユーザー：", newUser);
-
-  // レスポンスを返す
   res.json({
     message: "ユーザーを追加しました",
     user: newUser,
   });
 });
 
-// GET：注文一覧
 app.get("/orders", (req, res) => {
   const orders = [
     { id: 1, userId: 1, productId: 1, quantity: 2, total: 2000 },
@@ -780,24 +670,15 @@ app.get("/orders", (req, res) => {
   res.json(orders);
 });
 
-// POST：注文作成
 app.post("/orders", (req, res) => {
-  // リクエストボディからデータを取得
   const newOrder = req.body;
 
-  // 受け取ったデータを確認
-  console.log("受け取った注文：", newOrder);
-
-  // レスポンスを返す
   res.json({
     message: "注文を作成しました",
     user: newOrder,
   });
 });
 
-// ==================
-// Slack通知テスト
-// ==================
 app.get("/test-slack", async (req, res) => {
   try {
     const message = {
@@ -835,8 +716,6 @@ app.get("/test-slack", async (req, res) => {
     };
 
     await axios.post(process.env.SLACK_WEBHOOK_URL, message);
-
-    console.log("slack通知送信成功");
 
     res.json({
       success: true,
