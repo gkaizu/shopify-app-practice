@@ -596,15 +596,7 @@ app.get("/products/shopify", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send(`
-  <h1>Shopify Inventory Alert App</h1>
-  <p>在庫アラートアプリへようこそ！</p>
-  <p><strong>CI/CD対応済み</strong></p>
-  <ul>
-    <li><a href="/auth?shop=dev-practice-store-app.myshopify.com">OAuth認証（開発環境）</a></li>
-    <li><a href="/dashboard">ダッシュボード</a></li>
-  </ul>
-`);
+  res.render('index');
 });
 
 app.get("/products", (req, res) => {
