@@ -1,0 +1,102 @@
+/* 在庫チェック結果ページ専用スタイル */
+
+.summary {
+  background: #f0f4ff;
+  border-left: 4px solid #5865F2;
+  padding: 16px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.summary-text {
+  font-size: 16px;
+  color: #333;
+}
+
+.results-section {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.alert-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.2s;
+}
+
+.alert-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.alert-card.warning {
+  border-left: 4px solid #f04747;
+  background: #fff5f5;
+}
+
+.alert-card.success {
+  border-left: 4px solid #43b581;
+  background: #f0fdf4;
+}
+
+.product-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.product-details {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.detail-value {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.detail-value.danger {
+  color: #f04747;
+}
+
+.detail-value.success {
+  color: #43b581;
+}
+
+.alert-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.alert-badge.sent {
+  background: #f04747;
+  color: white;
+}
+
+.alert-badge.ok {
+  background: #43b581;
+  color: white;
+}

@@ -1,0 +1,93 @@
+/* シンプルページ（認証、エラー、トップページ）用スタイル */
+
+/* 中央寄せコンテンツ */
+.center-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+}
+
+.message-box {
+  background: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+}
+
+.message-box h1 {
+  margin-bottom: 16px;
+}
+
+.message-box p {
+  color: #666;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.message-box .btn {
+  margin: 8px;
+}
+
+/* 成功メッセージ */
+.success-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+
+.success-message {
+  color: #43b581;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* エラーメッセージ */
+.error-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+
+.error-message {
+  color: #f04747;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* リストスタイル */
+.link-list {
+  text-align: left;
+  margin-top: 24px;
+}
+
+.link-list p {
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+.link-list a {
+  color: #5865F2;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.link-list a:hover {
+  text-decoration: underline;
+}
+
+/* 認証ページ固有 */
+.auth-info {
+  background: #f0f4ff;
+  padding: 16px;
+  border-radius: 4px;
+  margin: 16px 0;
+  text-align: left;
+}
+
+.auth-info strong {
+  color: #5865F2;
+}
