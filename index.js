@@ -483,11 +483,13 @@ app.get("/check-inventory", async (req, res) => {
       }
     }
 
-    res.json({
-      message: "在庫チェック完了",
+    const alertCount = alerts.filter(a => a.alerted).length;
+
+    res.render('inventory-check-result', {
       shop_name: shop.shop_name,
       checked: settings.length,
-      alerts: alerts,
+      alertCount: alertCount,
+      alerts: alerts
     });
   } catch (error) {
     console.error("在庫チェックエラー:", error);
