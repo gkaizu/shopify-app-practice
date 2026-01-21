@@ -572,11 +572,7 @@ app.get("/products/shopify", async (req, res) => {
       .single();
 
     if (error || !shops) {
-      return res.status(401).send(`
-        <h1>認証が必要です</h1>
-        <p>まず認証してください:</p>
-        <p><a href="/auth?shop=dev-practice-store-app.myshopify.com">認証を開始</a></p>
-      `);
+      return res.status(401).render('auth-required');
     }
 
     const { shop_name, access_token } = shops;
