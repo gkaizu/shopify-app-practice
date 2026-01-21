@@ -1,0 +1,428 @@
+/* リセットとベーススタイル */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  background: #f7f8fa;
+  padding: 20px;
+  line-height: 1.6;
+}
+
+/* コンテナ */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.container-small {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.container-narrow {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ヘッダー */
+.header {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+h1 {
+  color: #1a1a1a;
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+h2 {
+  font-size: 20px;
+  margin-bottom: 20px;
+  color: #1a1a1a;
+}
+
+h3 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: #1a1a1a;
+}
+
+/* テキストスタイル */
+.store-name {
+  color: #666;
+  font-size: 14px;
+  word-break: break-all;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: #666;
+}
+
+/* セクション */
+.section {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+/* ボタン */
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-large {
+  padding: 12px 24px;
+  font-size: 16px;
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 4px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+.btn-primary {
+  background: #5865F2;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #4752C4;
+}
+
+.btn-secondary {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.btn-secondary:hover {
+  background: #e0e0e0;
+}
+
+.btn-success {
+  background: #43b581;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #3ca374;
+}
+
+.btn-danger,
+.btn-delete {
+  background: #f04747;
+  color: white;
+}
+
+.btn-danger:hover,
+.btn-delete:hover {
+  background: #d84040;
+}
+
+.btn-edit {
+  background: #5865F2;
+  color: white;
+}
+
+.btn-edit:hover {
+  background: #4752C4;
+}
+
+.btn-full-width {
+  width: 100%;
+}
+
+/* ボタングループ */
+.btn-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-group .btn {
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+/* アクションエリア */
+.actions {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* フォーム */
+.form-group {
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #5865F2;
+  box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.1);
+}
+
+/* テーブル */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+th {
+  background: #f7f8fa;
+  font-weight: 600;
+  color: #666;
+  font-size: 13px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+tbody tr:hover {
+  background: #f9f9f9;
+}
+
+/* ステータスバッジ */
+.status-active,
+.badge-success {
+  color: #43b581;
+  font-weight: 600;
+}
+
+.status-inactive,
+.badge-danger {
+  color: #f04747;
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-primary {
+  background: #5865F2;
+  color: white;
+}
+
+.badge-success-bg {
+  background: #43b581;
+  color: white;
+}
+
+.badge-danger-bg {
+  background: #f04747;
+  color: white;
+}
+
+/* 空の状態 */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+/* モーダル */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  max-width: 500px;
+  margin: 100px auto;
+  padding: 24px;
+  border-radius: 8px;
+  width: calc(100% - 40px);
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-buttons button {
+  flex: 1;
+}
+
+/* カードレイアウト */
+.card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.2s;
+  background: white;
+}
+
+.card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.card.warning {
+  border-left: 4px solid #f04747;
+  background: #fff5f5;
+}
+
+.card.success {
+  border-left: 4px solid #43b581;
+  background: #f0fdf4;
+}
+
+/* アラートボックス */
+.alert {
+  padding: 16px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.alert-info {
+  background: #f0f4ff;
+  border-left: 4px solid #5865F2;
+  color: #333;
+}
+
+.alert-success {
+  background: #f0fdf4;
+  border-left: 4px solid #43b581;
+  color: #333;
+}
+
+.alert-warning {
+  background: #fff5f5;
+  border-left: 4px solid #f04747;
+  color: #333;
+}
+
+/* ユーティリティ */
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; }
+
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+.mb-3 { margin-bottom: 24px; }
+
+.p-1 { padding: 8px; }
+.p-2 { padding: 16px; }
+.p-3 { padding: 24px; }
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
+  .header {
+    padding: 16px;
+  }
+
+  .section {
+    padding: 16px;
+  }
+
+  .actions {
+    padding: 16px;
+  }
+
+  .btn:not(.btn-small) {
+    width: 100%;
+    margin-right: 0;
+  }
+
+  .btn-small {
+    margin-bottom: 8px;
+  }
+
+  .btn-group {
+    flex-direction: column;
+  }
+
+  .modal-content {
+    margin: 20px auto;
+  }
+
+  table {
+    font-size: 12px;
+  }
+
+  th, td {
+    padding: 8px 4px;
+  }
+}
