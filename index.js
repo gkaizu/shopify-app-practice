@@ -170,9 +170,6 @@ app.get("/auth/callback", async (req, res) => {
       throw error;
     }
 
-    global.shopifyAccessToken = accessToken;
-    global.shopName = shop;
-
     res.render('auth-success');
   } catch (error) {
     console.error("認証エラー:", error.response?.data || error.message);
@@ -608,69 +605,6 @@ app.get("/products/shopify", async (req, res) => {
 
 app.get("/", (req, res) => {
   res.render('index');
-});
-
-app.get("/products", (req, res) => {
-  const products = [
-    { id: 1, name: "Product A", price: 1000 },
-    { id: 2, name: "Product B", price: 2000 },
-  ];
-  res.json(products);
-});
-
-app.post("/products", (req, res) => {
-  const newProduct = req.body;
-
-  if (!newProduct.name || !newProduct.price) {
-    return res.status(400).json({
-      error: "nameとpriceは必須です",
-    });
-  }
-
-  if (typeof newProduct.price !== "number") {
-    return res.status(400).json({
-      error: "priceは数値である必要があります",
-    });
-  }
-
-  res.json({
-    message: "商品を追加しました",
-    product: newProduct,
-  });
-});
-
-app.get("/users", (req, res) => {
-  const users = [
-    { id: 1, name: "Sam", age: 19 },
-    { id: 2, name: "Julia", age: 22 },
-  ];
-  res.json(users);
-});
-
-app.post("/users", (req, res) => {
-  const newUser = req.body;
-
-  res.json({
-    message: "ユーザーを追加しました",
-    user: newUser,
-  });
-});
-
-app.get("/orders", (req, res) => {
-  const orders = [
-    { id: 1, userId: 1, productId: 1, quantity: 2, total: 2000 },
-    { id: 2, userId: 2, productId: 2, quantity: 1, total: 2000 },
-  ];
-  res.json(orders);
-});
-
-app.post("/orders", (req, res) => {
-  const newOrder = req.body;
-
-  res.json({
-    message: "注文を作成しました",
-    user: newOrder,
-  });
 });
 
 app.get("/test-slack", async (req, res) => {
