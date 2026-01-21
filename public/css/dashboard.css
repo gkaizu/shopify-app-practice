@@ -221,6 +221,7 @@ tr:hover {
   margin: 100px auto;
   padding: 24px;
   border-radius: 8px;
+  width: calc(100% - 40px);
 }
 
 .modal h3 { 
