@@ -173,12 +173,7 @@ app.get("/auth/callback", async (req, res) => {
     global.shopifyAccessToken = accessToken;
     global.shopName = shop;
 
-    res.send(`
-      <h1>認証成功！</h1>
-      <p>Shopify APIを使えるようになりました。</p>
-      <p>アクセストークンをデータベースに保存しました。</p>
-      <p><a href="/products/shopify">Shopifyの商品データを取得する</a></p>
-    `);
+    res.render('auth-success');
   } catch (error) {
     console.error("認証エラー:", error.response?.data || error.message);
     res
