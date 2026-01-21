@@ -1,21 +1,6 @@
-* { 
-  margin: 0; 
-  padding: 0; 
-  box-sizing: border-box; 
-}
+/* ダッシュボードページ専用スタイル */
 
-body { 
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-  background: #f7f8fa;
-  padding: 20px;
-}
-
-.container { 
-  max-width: 1200px; 
-  margin: 0 auto; 
-}
-
-/* ストア名入力画面 */
+/* ストア名入力画面（初期画面） */
 .container > h1 {
   color: #333;
   margin-bottom: 20px;
@@ -58,74 +43,7 @@ body {
   background: #4752C4;
 }
 
-/* ダッシュボード画面 */
-.header {
-  background: white;
-  padding: 24px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-h1 { 
-  color: #1a1a1a; 
-  font-size: 28px; 
-  margin-bottom: 8px; 
-}
-
-.shop-name { 
-  color: #666; 
-  font-size: 14px; 
-}
-
-.actions {
-  background: white;
-  padding: 24px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.btn {
-  display: inline-block;
-  padding: 10px 20px;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  margin-right: 10px;
-  margin-bottom: 10px;
-}
-
-.btn-primary { 
-  background: #5865F2; 
-  color: white; 
-}
-
-.btn-primary:hover { 
-  background: #4752C4; 
-}
-
-.btn-secondary { 
-  background: #f0f0f0; 
-  color: #333; 
-}
-
-.btn-secondary:hover { 
-  background: #e0e0e0; 
-}
-
-.btn-success { 
-  background: #43b581; 
-  color: white; 
-}
-
-.btn-success:hover { 
-  background: #3ca374; 
-}
-
+/* アラート設定セクション */
 .settings-section {
   background: white;
   padding: 24px;
@@ -133,126 +51,45 @@ h1 {
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-h2 { 
-  font-size: 20px; 
-  margin-bottom: 20px; 
-  color: #1a1a1a; 
-}
-
+/* テーブルの追加スタイル（common.cssを補完） */
 table {
-  width: 100%;
-  border-collapse: collapse;
+  table-layout: auto;
+  min-width: 600px;
 }
 
-th, td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #e0e0e0;
+/* テーブルをレスポンシブ対応にする */
+.settings-section {
+  overflow-x: auto;
 }
 
-th {
-  background: #f7f8fa;
-  font-weight: 600;
-  color: #666;
-  font-size: 13px;
-  text-transform: uppercase;
-}
-
-tr:hover { 
-  background: #f9f9f9; 
-}
-
-.status-active { 
-  color: #43b581; 
-  font-weight: 600;
-}
-
-.status-inactive { 
-  color: #f04747; 
-  font-weight: 600;
-}
-
-.btn-small {
-  padding: 6px 12px;
-  font-size: 12px;
-  border-radius: 4px;
-  margin-right: 5px;
-}
-
-.btn-edit { 
-  background: #5865F2; 
-  color: white; 
-}
-
-.btn-edit:hover { 
-  background: #4752C4; 
-}
-
-.btn-delete { 
-  background: #f04747; 
-  color: white; 
-}
-
-.btn-delete:hover { 
-  background: #d84040; 
-}
-
-.empty-state {
-  text-align: center;
-  padding: 40px;
-  color: #666;
-}
-
-/* モーダル */
-.modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  max-width: 500px;
-  margin: 100px auto;
-  padding: 24px;
-  border-radius: 8px;
-  width: calc(100% - 40px);
-}
-
-.modal h3 { 
-  margin-bottom: 20px; 
-}
-
-.form-group {
-  margin-bottom: 16px;
-}
-
-label {
+/* 商品IDの小さいテキスト */
+td small {
   display: block;
-  margin-bottom: 6px;
-  font-weight: 500;
-  font-size: 14px;
+  color: #999;
+  font-size: 12px;
+  margin-top: 4px;
 }
 
-input, select {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
+/* 操作列のボタン配置 */
+td .btn-small:last-child {
+  margin-right: 0;
 }
 
-.modal-buttons {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-}
+/* モバイル対応 */
+@media (max-width: 768px) {
+  /* テーブル内のボタンを縦並びにする */
+  td {
+    white-space: normal;
+  }
 
-.modal-buttons button {
-  flex: 1;
+  td .btn-small {
+    display: block;
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+
+  td .btn-small:last-child {
+    margin-bottom: 0;
+  }
 }

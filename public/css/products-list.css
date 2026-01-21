@@ -1,0 +1,81 @@
+/* 商品一覧ページ専用スタイル */
+
+.summary {
+  background: #f0f4ff;
+  border-left: 4px solid #5865F2;
+  padding: 16px;
+  border-radius: 4px;
+  margin-top: 16px;
+}
+
+.summary-text {
+  font-size: 16px;
+  color: #333;
+}
+
+.products-section {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-wrapper table {
+  min-width: 600px;
+}
+
+.product-title {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* 在庫バッジ */
+.inventory-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.inventory-badge.high {
+  background: #e8f5e9;
+  color: #43b581;
+}
+
+.inventory-badge.medium {
+  background: #fff3e0;
+  color: #ff9800;
+}
+
+.inventory-badge.low {
+  background: #ffebee;
+  color: #f04747;
+}
+
+/* テーブルのセルスタイル */
+th, td {
+  white-space: nowrap;
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  table {
+    font-size: 14px;
+  }
+
+  th, td {
+    padding: 8px;
+  }
+}

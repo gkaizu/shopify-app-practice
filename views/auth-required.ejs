@@ -4,54 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>認証が必要です - Shopify Inventory Alert</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      max-width: 600px;
-      margin: 50px auto;
-      padding: 20px;
-      background-color: #f5f5f5;
-    }
-    .container {
-      background: white;
-      padding: 40px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    h1 {
-      color: #de3618;
-      margin-bottom: 20px;
-    }
-    p {
-      line-height: 1.6;
-      color: #333;
-    }
-    a {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 12px 24px;
-      background-color: #5c6ac4;
-      color: white;
-      text-decoration: none;
-      border-radius: 4px;
-      font-weight: 600;
-    }
-    a:hover {
-      background-color: #4959bd;
-    }
-    .warning-icon {
-      font-size: 48px;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-  </style>
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/simple-page.css">
 </head>
 <body>
-  <div class="container">
-    <div class="warning-icon">⚠️</div>
-    <h1>認証が必要です</h1>
-    <p>まず認証を行ってください。</p>
-    <a href="/auth?shop=dev-practice-store-app.myshopify.com">認証を開始</a>
+  <div class="container-narrow">
+    <div class="message-box">
+      <div class="error-icon">⚠️</div>
+      <h1>認証が必要です</h1>
+      <p>まず認証を行ってください。</p>
+      <a href="/auth?shop=dev-practice-store-app.myshopify.com" class="btn btn-primary btn-large">認証を開始</a>
+    </div>
   </div>
 </body>
 </html>
