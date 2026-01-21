@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>商品一覧 - Shopify Inventory Alert</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: #f7f8fa;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    h1 {
+      color: #1a1a1a;
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .summary {
+      background: #f0f4ff;
+      border-left: 4px solid #5865F2;
+      padding: 16px;
+      border-radius: 4px;
+      margin-top: 16px;
+    }
+
+    .summary-text {
+      font-size: 16px;
+      color: #333;
+    }
+
+    .products-section {
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #1a1a1a;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #f7f8fa;
+      font-weight: 600;
+      color: #666;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    tr:hover {
+      background: #f9f9f9;
+    }
+
+    .product-title {
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .product-title {
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .inventory-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .inventory-badge.high {
+      background: #e8f5e9;
+      color: #43b581;
+    }
+
+    .inventory-badge.medium {
+      background: #fff3e0;
+      color: #ff9800;
+    }
+
+    .inventory-badge.low {
+      background: #ffebee;
+      color: #f04747;
+    }
+
+    .actions {
+      margin-top: 24px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+    }
+
+    @media (max-width: 768px) {
+      .btn {
+        flex: 1 1 100%;
+        text-align: center;
+      }
+
+      table {
+        font-size: 14px;
+      }
+
+      th, td {
+        padding: 8px;
+      }
+    }
+
+    .btn-primary {
+      background: #5865F2;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #4752C4;
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📦 商品一覧</h1>
+
+      <div class="summary">
+        <div class="summary-text">
+          全 <%= products.length %> 商品
+        </div>
+      </div>
+    </div>
+
+    <div class="products-section">
+      <h2>Shopify商品データ</h2>
+
+      <% if (products.length === 0) { %>
+        <div class="empty-state">
+          <div class="empty-state-icon">📦</div>
+          <p>商品がありません</p>
+        </div>
+      <% } else { %>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>商品名</th>
+                <th>商品ID</th>
+                <th>在庫数</th>
+                <th>ステータス</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% products.forEach(product => { %>
+                <tr>
+                  <td class="product-title"><%= product.title %></td>
+                  <td><%= product.id %></td>
+                  <td><%= product.inventory_quantity %>個</td>
+                  <td>
+                    <% if (product.inventory_quantity > 50) { %>
+                      <span class="inventory-badge high">✅ 在庫充分</span>
+                    <% } else if (product.inventory_quantity > 10) { %>
+                      <span class="inventory-badge medium">⚠️ 在庫少</span>
+                    <% } else { %>
+                      <span class="inventory-badge low">🚨 要補充</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="actions">
+      <a href="/dashboard" class="btn btn-primary">📊 ダッシュボードに戻る</a>
+      <a href="/" class="btn btn-secondary">🏠 ホームへ</a>
+    </div>
+  </div>
+</body>
+</html>

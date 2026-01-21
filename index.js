@@ -587,7 +587,16 @@ app.get("/products/shopify", async (req, res) => {
       }
     );
 
-    res.json(response.data);
+    const products = response.data.products.map((p) => ({
+      id: p.id,
+      title: p.title,
+      inventory_quantity: p.variants.reduce(
+        (sum, v) => sum + (v.inventory_quantity || 0),
+        0
+      ),
+    }));
+
+    res.render('products-list', { products });
   } catch (error) {
     console.error("API呼び出しエラー:", error.response?.data || error.message);
     res.status(500).json({
